@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Persian Empire Study Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #F0D080;
+    --marble: #F5F0E8;
+    --marble-dark: #E8E0D0;
+    --sky: #7A5C2A;
+    --sky-dark: #4A3210;
+    --terra: #B85C38;
+    --terra-light: #D4724A;
+    --olive: #6B7C3A;
+    --shadow: rgba(0,0,0,0.3);
+    --ink: #2A1F14;
+    --persian-blue: #1a3a5c;
+    --persian-mid: #2D5A8A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Lato', sans-serif;
+    background: #2a1a08;
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      repeating-linear-gradient(90deg, rgba(201,168,76,0.04) 0px, rgba(201,168,76,0.04) 2px, transparent 2px, transparent 100px),
+      linear-gradient(180deg, #1a0e04 0%, #2a1a08 40%, #3a2510 100%);
+    z-index: -1;
+  }
+  header {
+    text-align: center;
+    padding: 32px 20px 20px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, transparent 100%);
+    border-bottom: 3px solid var(--gold);
+    position: relative;
+  }
+  header::after {
+    content: '🦅 🏛️ ⚔️ 🏛️ 🦅';
+    display: block;
+    font-size: 1.3rem;
+    margin-top: 8px;
+    letter-spacing: 8px;
+  }
+  h1 {
+    font-family: 'Cinzel Decorative', serif;
+    color: var(--gold-light);
+    font-size: clamp(1.2rem, 4.5vw, 2.4rem);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.7), 0 0 40px rgba(201,168,76,0.3);
+    letter-spacing: 2px;
+  }
+  .subtitle {
+    font-family: 'Cinzel', serif;
+    color: var(--marble);
+    opacity: 0.8;
+    margin-top: 6px;
+    font-size: 0.9rem;
+    letter-spacing: 3px;
+  }
+  .score-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 36px;
+    padding: 14px 32px;
+    background: rgba(0,0,0,0.4);
+    border-bottom: 1px solid rgba(201,168,76,0.3);
+    flex-wrap: wrap;
+  }
+  .score-item {
+    font-family: 'Cinzel', serif;
+    color: var(--gold-light);
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+  }
+  .score-item span { color: #fff; font-weight: 700; margin-left: 6px; }
+  .nav-tabs {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 20px 24px 0;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .tab-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 0.82rem;
+    letter-spacing: 1px;
+    background: rgba(255,255,255,0.06);
+    color: var(--marble);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 6px 6px 0 0;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .tab-btn:hover { background: rgba(201,168,76,0.2); }
+  .tab-btn.active { background: var(--gold); color: var(--ink); border-color: var(--gold); font-weight: 700; }
+  .main { max-width: 1100px; margin: 0 auto; padding: 24px 32px 60px; }
+  @media (max-width: 768px) { .main { padding: 16px 14px 60px; } }
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .card {
+    background: var(--marble);
+    border-radius: 8px;
+    border: 2px solid var(--gold);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.6);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .card-header {
+    background: linear-gradient(135deg, #1a0e04, #4A3210);
+    color: var(--gold-light);
+    font-family: 'Cinzel', serif;
+    font-size: 1.05rem;
+    padding: 14px 20px;
+    letter-spacing: 2px;
+    border-bottom: 2px solid var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-body { padding: 20px; }
+
+  /* Flashcards */
+  .flashcard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 18px;
+  }
+  @media (min-width: 900px) { .flashcard-grid { grid-template-columns: repeat(4, 1fr); } }
+  .flashcard { perspective: 800px; cursor: pointer; height: 170px; }
+  .flashcard-inner {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4,0.2,0.2,1);
+  }
+  .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+  .flashcard-front, .flashcard-back {
+    position: absolute;
+    width: 100%; height: 100%;
+    backface-visibility: hidden;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    text-align: center;
+    border: 2px solid var(--gold);
+    box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+  }
+  .flashcard-front {
+    background: linear-gradient(145deg, #1a0e04, #4A3210);
+    color: var(--gold-light);
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  .flashcard-back {
+    background: var(--marble);
+    color: var(--ink);
+    font-size: 0.84rem;
+    line-height: 1.5;
+    transform: rotateY(180deg);
+  }
+  .flip-hint { font-family: 'Cinzel', serif; font-size: 0; color: rgba(255,255,255,0.5); letter-spacing: 2px; text-transform: uppercase; margin-top: 8px; }
+  .flip-hint::before { font-size: 0.62rem; content: 'tap to flip'; }
+
+  /* Quiz */
+  .quiz-question {
+    background: var(--marble);
+    border: 2px solid var(--gold);
+    border-radius: 8px;
+    padding: 22px 26px;
+    margin-bottom: 18px;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+  }
+  @media (min-width: 900px) {
+    #quiz-container { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+    .quiz-summary { grid-column: 1 / -1; }
+    .quiz-question { margin-bottom: 0; }
+  }
+  .q-text { font-family: 'Cinzel', serif; font-size: 0.95rem; color: var(--sky-dark); margin-bottom: 16px; line-height: 1.5; letter-spacing: 0.5px; }
+  .q-num { font-size: 0.72rem; color: var(--gold); font-family: 'Cinzel', serif; letter-spacing: 2px; margin-bottom: 6px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn {
+    background: white; border: 2px solid var(--marble-dark); border-radius: 6px;
+    padding: 11px 15px; font-size: 0.88rem; font-family: 'Lato', sans-serif;
+    cursor: pointer; text-align: left; transition: all 0.2s; color: var(--ink);
+  }
+  .opt-btn:hover:not(:disabled) { border-color: var(--sky); background: #f5ede0; }
+  .opt-btn.correct { background: #d4edda; border-color: #28a745; color: #155724; font-weight: 700; }
+  .opt-btn.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+  .opt-btn:disabled { cursor: default; }
+  .feedback { margin-top: 10px; padding: 10px 14px; border-radius: 6px; font-size: 0.86rem; line-height: 1.5; display: none; }
+  .feedback.show { display: block; }
+  .feedback.correct-fb { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+  .feedback.wrong-fb { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+
+  /* Compare */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--gold);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    margin-bottom: 20px;
+  }
+  .compare-col { padding: 16px; background: var(--marble); }
+  .compare-col.athens { background: linear-gradient(160deg, #f5ede0, #f5f0e8); }
+  .compare-col.sparta { background: linear-gradient(160deg, #e8f0f8, #f5f0e8); }
+  .compare-center {
+    background: linear-gradient(180deg, #1a0e04, #B85C38);
+    color: var(--gold-light);
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding: 16px 8px;
+    text-align: center;
+    min-width: 80px;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-left: 2px solid var(--gold);
+    border-right: 2px solid var(--gold);
+  }
+  .compare-title { font-family: 'Cinzel Decorative', serif; font-size: 1rem; text-align: center; padding: 10px; letter-spacing: 2px; border-bottom: 2px solid var(--gold); }
+  .compare-col.athens .compare-title { color: var(--terra); }
+  .compare-col.sparta .compare-title { color: var(--sky-dark); }
+  .compare-item { padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.08); font-size: 0.86rem; line-height: 1.45; color: var(--ink); }
+  .compare-item:last-child { border-bottom: none; }
+  .compare-label { font-weight: 700; font-size: 0.73rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+  .athens .compare-label { color: var(--terra); }
+  .sparta .compare-label { color: var(--sky-dark); }
+  @media (max-width: 600px) {
+    .compare-grid { grid-template-columns: 1fr; }
+    .compare-center { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; min-width: unset; border: none; border-top: 2px solid var(--gold); border-bottom: 2px solid var(--gold); padding: 10px; }
+  }
+
+  /* Info */
+  .info-block { background: var(--marble); border-radius: 8px; border-left: 5px solid var(--gold); padding: 18px 22px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+  .info-grid { display: grid; grid-template-columns: 1fr; gap: 0; }
+  @media (min-width: 900px) { .info-grid { grid-template-columns: 1fr 1fr; gap: 14px; } .info-grid .info-block { margin-bottom: 0; } }
+  .info-block h3 { font-family: 'Cinzel', serif; color: var(--sky-dark); font-size: 0.93rem; letter-spacing: 1px; margin-bottom: 8px; }
+  .info-block p, .info-block li { font-size: 0.86rem; line-height: 1.6; color: var(--ink); }
+  .info-block ul { padding-left: 18px; }
+  .info-block li { margin-bottom: 4px; }
+
+  /* Match */
+  .match-container { display: flex; gap: 20px; flex-wrap: wrap; }
+  .match-col { flex: 1; min-width: 220px; }
+  .match-col h4 { font-family: 'Cinzel', serif; color: var(--gold-light); font-size: 0.88rem; letter-spacing: 2px; margin-bottom: 12px; text-align: center; }
+  .match-item {
+    background: var(--marble); border: 2px solid var(--marble-dark); border-radius: 6px;
+    padding: 11px 15px; margin-bottom: 10px; cursor: pointer; font-size: 0.88rem;
+    transition: all 0.2s; color: var(--ink); font-family: 'Lato', sans-serif; line-height: 1.4;
+  }
+  .match-item:hover { border-color: var(--gold); background: #f5ede0; }
+  .match-item.selected { border-color: var(--sky-dark); background: #f0e0c0; font-weight: 700; }
+  .match-item.matched { border-color: #28a745; background: #d4edda; color: #155724; cursor: default; }
+  .match-item.wrong-flash { border-color: #dc3545; background: #f8d7da; animation: shake 0.4s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .match-result { text-align: center; font-family: 'Cinzel', serif; color: var(--gold-light); padding: 10px; font-size: 0.9rem; letter-spacing: 1px; }
+
+  /* Buttons */
+  .btn {
+    font-family: 'Cinzel', serif; font-size: 0.83rem; letter-spacing: 2px; text-transform: uppercase;
+    padding: 10px 22px; border-radius: 5px; cursor: pointer; border: 2px solid var(--gold);
+    background: linear-gradient(145deg, var(--gold), #a8863a); color: var(--ink); font-weight: 700;
+    transition: all 0.2s; display: inline-block; margin-top: 12px; box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  }
+  .btn:hover { background: linear-gradient(145deg, var(--gold-light), var(--gold)); transform: translateY(-1px); }
+  .btn-secondary { background: transparent; color: var(--gold-light); border-color: rgba(201,168,76,0.5); }
+  .btn-secondary:hover { background: rgba(201,168,76,0.15); color: var(--gold-light); }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+
+  /* Quiz summary */
+  .quiz-summary { text-align: center; padding: 30px; background: var(--marble); border-radius: 8px; border: 2px solid var(--gold); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  .quiz-summary h2 { font-family: 'Cinzel Decorative', serif; color: var(--sky-dark); font-size: 1.4rem; margin-bottom: 10px; }
+  .quiz-score-big { font-family: 'Cinzel Decorative', serif; font-size: 3rem; color: var(--gold); text-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  .trophy { font-size: 4rem; margin-bottom: 10px; }
+
+  /* Battle timeline */
+  .battle-timeline { position: relative; padding-left: 28px; }
+  .battle-timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, var(--gold), var(--terra)); }
+  .battle-entry { position: relative; margin-bottom: 20px; }
+  .battle-entry::before { content: '⚔️'; position: absolute; left: -28px; font-size: 1rem; top: 2px; }
+  .battle-entry h4 { font-family: 'Cinzel', serif; color: var(--sky-dark); font-size: 0.92rem; margin-bottom: 5px; }
+  .battle-entry p { font-size: 0.84rem; line-height: 1.5; color: var(--ink); }
+  .battle-year { display: inline-block; background: var(--sky-dark); color: var(--gold-light); font-family: 'Cinzel', serif; font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; margin-bottom: 4px; letter-spacing: 1px; }
+
+  @media (max-width: 600px) {
+    .flashcard-grid { grid-template-columns: 1fr 1fr; }
+    #quiz-container { display: block; }
+  }
+  @media (min-width: 601px) and (max-width: 899px) {
+    .flashcard-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚔️ Persian Empire Study Quest</h1>
+  <p class="subtitle">7th Grade History — Conquer the Material!</p>
+</header>
+
+<div class="score-bar">
+  <div class="score-item">🏆 Points: <span id="total-points">0</span></div>
+  <div class="score-item">✅ Quiz Score: <span id="quiz-correct">0</span> / <span id="quiz-total">0</span></div>
+  <div class="score-item">🃏 Cards Flipped: <span id="cards-flipped">0</span></div>
+</div>
+
+<div class="nav-tabs">
+  <button class="tab-btn active" onclick="showTab('vocab', this)">📖 Flashcards</button>
+  <button class="tab-btn" onclick="showTab('quiz', this)">🧠 Quiz</button>
+  <button class="tab-btn" onclick="showTab('battles', this)">⚔️ Battles</button>
+  <button class="tab-btn" onclick="showTab('explore', this)">🗺️ Explore</button>
+  <button class="tab-btn" onclick="showTab('match', this)">🎯 Match It</button>
+</div>
+
+<div class="main">
+
+  <!-- FLASHCARDS -->
+  <div class="section active" id="section-vocab">
+    <div class="card">
+      <div class="card-header">📖 Key People, Terms & Concepts — Tap to Reveal!</div>
+      <div class="card-body">
+        <p style="color:#888; font-size:0.83rem; margin-bottom:16px;">Tap each card to flip it and see the answer. Try to guess first!</p>
+        <div class="flashcard-grid" id="flashcard-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="section" id="section-quiz">
+    <div id="quiz-container"></div>
+  </div>
+
+  <!-- BATTLES -->
+  <div class="section" id="section-battles">
+    <div class="card">
+      <div class="card-header">⚔️ The Greco-Persian Wars — Battle by Battle</div>
+      <div class="card-body">
+        <div class="battle-timeline">
+          <div class="battle-entry">
+            <div class="battle-year">499–493 BCE — The Spark</div>
+            <h4>The Ionian Revolt</h4>
+            <p>Greek city-states on the coast of modern Turkey (Ionia) revolted against Persian rule. Athens sent ships to help them. The revolt failed, but it gave Darius I his reason to invade Greece.</p>
+          </div>
+          <div class="battle-entry">
+            <div class="battle-year">490 BCE — First Invasion</div>
+            <h4>Battle of Marathon</h4>
+            <p>Darius I sent a fleet to punish Athens. Despite being heavily outnumbered, Athenian forces used a brilliant flanking tactic — attacking at a run and enveloping the Persian center. Persia retreated. A runner legendarily sprinted ~26 miles to Athens to announce the victory, inspiring the modern marathon race.</p>
+          </div>
+          <div class="battle-entry">
+            <div class="battle-year">480 BCE — Second Invasion</div>
+            <h4>Battle of Thermopylae ("The 300")</h4>
+            <p>Xerxes I led a massive invasion force into Greece. King Leonidas I of Sparta held the narrow mountain pass of Thermopylae with just 300 Spartans and thousands of Greek allies for three days. A traitor revealed a hidden path around the pass, allowing Persia to win — but the sacrifice bought Greece crucial time to prepare. Leonidas died fighting.</p>
+          </div>
+          <div class="battle-entry">
+            <div class="battle-year">480 BCE — Naval Turning Point</div>
+            <h4>Battle of Salamis</h4>
+            <p>Athenian commander Themistocles lured the enormous Persian fleet into the narrow Salamis strait. In the tight waters, the smaller, more maneuverable Greek ships devastated the Persians. This was the only major naval battle of the war — and it crippled Persia's ability to supply its army.</p>
+          </div>
+          <div class="battle-entry">
+            <div class="battle-year">479 BCE — Final Victory</div>
+            <h4>Battle of Plataea</h4>
+            <p>A united Greek army — Spartan-led on land — crushed the remaining Persian forces. The Persians retreated and never again seriously threatened mainland Greece. Greece had won the war.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">🏆 Who Won & What Happened After</div>
+      <div class="card-body">
+        <div class="info-block" style="border-left-color: var(--olive);">
+          <h3>Greece Won Against All Odds</h3>
+          <p>Outnumbered in nearly every engagement, the united Greek city-states turned back the world's largest empire through superior tactics, terrain knowledge, and naval strategy. The victories at Marathon, Salamis, and Plataea are still studied in military academies today.</p>
+        </div>
+        <div class="info-block" style="border-left-color: var(--gold);">
+          <h3>The Golden Age of Athens</h3>
+          <p>Greek victory sparked an explosion of confidence. Under the leader Pericles, Athens entered its Golden Age (~480–404 BCE) — an era of democracy, philosophy (Socrates, Plato, Aristotle), stunning architecture (the Parthenon), and art that shaped all of Western civilization.</p>
+        </div>
+        <div class="info-block" style="border-left-color: var(--terra);">
+          <h3>The End of the Persian Empire</h3>
+          <p>The Persian Empire lasted until 330 BCE, when Alexander the Great of Macedonia swept through it in just a few years — defeating Darius III in battle and burning Persepolis to the ground. Over 200 years of Achaemenid Persian rule ended.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPLORE -->
+  <div class="section" id="section-explore">
+    <div class="card">
+      <div class="card-header">🗺️ The Persian Empire — Overview</div>
+      <div class="card-body">
+        <div class="info-block" style="border-left-color: var(--terra);">
+          <h3>What Was the Persian Empire?</h3>
+          <p>The Persian Empire (also called the Achaemenid Empire) was the <strong>largest empire the ancient world had ever seen</strong>. Founded around 550 BCE by Cyrus the Great, it stretched from modern-day Iran across the Middle East, Egypt, Central Asia, and into northwest India — covering about 5.5 million square kilometers at its peak.</p>
+        </div>
+        <div class="info-block" style="border-left-color: var(--terra);">
+          <h3>📍 Where Was It Located?</h3>
+          <p>The empire centered on modern-day <strong>Iran</strong> but spread across a huge swath of the ancient world:</p>
+          <ul>
+            <li><strong>West:</strong> Modern Turkey, Egypt, and parts of Libya</li>
+            <li><strong>East:</strong> Modern Afghanistan and Pakistan (northwest India)</li>
+            <li><strong>North:</strong> Modern Armenia, Azerbaijan, and parts of Central Asia</li>
+            <li><strong>South:</strong> The Persian Gulf coast of modern Saudi Arabia</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">👑 The Major Emperors</div>
+      <div class="card-body">
+        <div class="info-grid">
+          <div class="info-block" style="border-left-color: var(--gold);">
+            <h3>Cyrus the Great (~550 BCE)</h3>
+            <p>Founded the Persian Empire by unifying the Medes and Persians. Famous for his remarkable <strong>tolerance</strong> of conquered peoples — he let them keep their religions, customs, and local leaders. He freed the Jews from Babylonian captivity, earning him praise even in the Bible.</p>
+          </div>
+          <div class="info-block" style="border-left-color: var(--gold);">
+            <h3>Darius I — "Darius the Great" (~522–486 BCE)</h3>
+            <p>The great organizer and builder. Created the <strong>Royal Road</strong> (1,500-mile highway), built <strong>Persepolis</strong>, divided the empire into provinces (satrapies), and established Zoroastrianism as the state religion. Led the first invasion of Greece (490 BCE).</p>
+          </div>
+          <div class="info-block" style="border-left-color: var(--gold);">
+            <h3>Xerxes I (~486–465 BCE)</h3>
+            <p>Son of Darius. Led the massive second invasion of Greece (480 BCE) — the largest military campaign the ancient world had seen. Famous for facing the 300 Spartans at Thermopylae and later losing at Salamis and Plataea.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">🕊️ What Made Persia Unique</div>
+      <div class="card-body">
+        <div class="info-block" style="border-left-color: var(--olive);">
+          <h3>The First Multicultural Empire</h3>
+          <p>No empire before Persia had governed such diverse peoples — different languages, religions, and cultures — under one central government while <strong>allowing local customs to continue</strong>. Conquered peoples could keep their religions, languages, and local governors (called satraps). This tolerance was revolutionary.</p>
+        </div>
+        <div class="info-block" style="border-left-color: var(--olive);">
+          <h3>Religion: Zoroastrianism</h3>
+          <p>The Persian Empire's primary religion was <strong>Zoroastrianism</strong>, founded by the prophet Zoroaster. It focused on the cosmic struggle between good (Ahura Mazda) and evil (Angra Mainyu) — one of the world's first monotheistic-leaning religions. Darius I made it the official state religion. Policies on non-followers varied by ruler — some enforced it strictly, while Cyrus was notably tolerant.</p>
+        </div>
+        <div class="info-block" style="border-left-color: var(--olive);">
+          <h3>Famous Public Works</h3>
+          <ul>
+            <li><strong>The Royal Road:</strong> A 1,500-mile highway from Sardis (Turkey) to Susa (Iran). Royal couriers could travel it in 7 days — a journey that normally took 90 days.</li>
+            <li><strong>Persepolis:</strong> A spectacular ceremonial capital city with massive palaces, audience halls, and carvings celebrating the empire's power.</li>
+          </ul>
+        </div>
+        <div class="info-block" style="border-left-color: var(--terra);">
+          <h3>Well Known For...</h3>
+          <ul>
+            <li>Tolerance of conquered peoples — unprecedented in history</li>
+            <li>Massive infrastructure (Royal Road, Persepolis)</li>
+            <li>A powerful professional army with archers and cavalry</li>
+            <li>An efficient provincial government system (satraps)</li>
+            <li>A vast postal/messenger relay system on the Royal Road</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MATCH -->
+  <div class="section" id="section-match">
+    <div class="card">
+      <div class="card-header">🎯 Match the Term to Its Definition!</div>
+      <div class="card-body">
+        <p style="color:#888; font-size:0.83rem; margin-bottom:14px;">Click a term on the left, then click its matching definition on the right. <span id="match-score-display"></span></p>
+        <div class="match-container">
+          <div class="match-col">
+            <h4>📜 Terms</h4>
+            <div id="match-terms"></div>
+          </div>
+          <div class="match-col">
+            <h4>💬 Definitions</h4>
+            <div id="match-defs"></div>
+          </div>
+        </div>
+        <div class="match-result" id="match-result"></div>
+        <button class="btn btn-secondary" onclick="initMatch()">🔄 Restart Match</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== DATA =====
+
+const vocab = [
+  { term: "Cyrus the Great", def: "Founder of the Persian Empire (~550 BCE). Known for tolerance of conquered peoples — let them keep their religions and customs." },
+  { term: "Darius I", def: "Persian emperor who built the Royal Road and Persepolis, established Zoroastrianism as state religion, and led the first invasion of Greece." },
+  { term: "Xerxes I", def: "Son of Darius. Led the massive second Persian invasion of Greece in 480 BCE — facing the 300 Spartans at Thermopylae." },
+  { term: "Zoroastrianism", def: "The primary religion of the Persian Empire, focused on the struggle between good (Ahura Mazda) and evil. One of history's first major monotheistic-leaning faiths." },
+  { term: "Royal Road", def: "A 1,500-mile highway built by Darius I connecting Sardis to Susa. Couriers could travel it in 7 days — normally a 90-day journey." },
+  { term: "Persepolis", def: "The grand ceremonial capital city of Persia, built by Darius I. Burned by Alexander the Great when he conquered the empire." },
+  { term: "Satrap", def: "A provincial governor who ruled a region of the Persian Empire on behalf of the emperor." },
+  { term: "Alexander the Great", def: "King of Macedonia who conquered the Persian Empire 334–330 BCE, defeating Darius III and ending Achaemenid Persian rule." },
+  { term: "Ionian Revolt", def: "The rebellion of Greek city-states in western Turkey against Persian rule (499–493 BCE). Athens helped them, giving Darius his reason to invade Greece." },
+  { term: "Marathon", def: "490 BCE battle where Athens defeated Darius I's larger Persian force using a flanking tactic. Ended the first Persian invasion of Greece." },
+  { term: "Thermopylae", def: "480 BCE battle where 300 Spartans under King Leonidas held a mountain pass against Xerxes' massive army for three days before being betrayed." },
+  { term: "Salamis", def: "480 BCE naval battle where the Greek fleet destroyed much of the Persian navy in a narrow strait — the only major sea battle of the war." },
+  { term: "Plataea", def: "479 BCE land battle where a united Greek army crushed Persian forces, ending the second Persian invasion and the Greco-Persian Wars." },
+  { term: "King Leonidas I", def: "Spartan king who led 300 Spartans at Thermopylae. His heroic last stand bought Greece time to prepare. He died in battle." },
+  { term: "Achaemenid Empire", def: "The official name of the Persian Empire, named after its founding dynasty. Lasted from ~550 BCE to 330 BCE." },
+  { term: "Golden Age of Athens", def: "Period (~480–404 BCE) after the Persian Wars when Athens flourished with democracy, philosophy, art, and the Parthenon under Pericles." },
+];
+
+const quizQuestions = [
+  // Emperors & founding
+  {
+    q: "Approximately when did Cyrus the Great establish the Persian Empire, and what made his rule stand out?",
+    opts: [
+      "Around 700 BCE — he conquered Egypt and North Africa and built a massive fleet",
+      "Around 550 BCE — he let conquered peoples keep their customs and religions",
+      "Around 490 BCE — he launched two major invasions of Greece to punish Athens",
+      "Around 400 BCE — he reorganized the empire into provinces called satrapies and built Persepolis"
+    ],
+    ans: 1,
+    explain: "Cyrus the Great founded the Persian Empire around 550 BCE. His policy of tolerance toward conquered peoples — letting them keep religions, languages, and local leaders — was unprecedented."
+  },
+  {
+    q: "Put these three Persian emperors in the correct order, from earliest to latest:",
+    opts: [
+      "Xerxes I → Darius I → Cyrus the Great",
+      "Darius I → Cyrus the Great → Xerxes I",
+      "Cyrus the Great → Darius I → Xerxes I",
+      "Cyrus the Great → Xerxes I → Darius I"
+    ],
+    ans: 2,
+    explain: "Cyrus founded the empire (~550 BCE), Darius I expanded and organized it (~522 BCE), and Xerxes I led the second invasion of Greece (~486 BCE)."
+  },
+  // Religion
+  {
+    q: "What was the name of the primary religion practiced in the Persian Empire?",
+    opts: ["Judaism","Islam","Zoroastrianism","Hinduism"],
+    ans: 2,
+    explain: "Zoroastrianism was the dominant religion, founded by the prophet Zoroaster. It focused on the battle between good (Ahura Mazda) and evil (Angra Mainyu) and is considered one of the world's earliest monotheistic-leaning faiths."
+  },
+  {
+    q: "Which emperor officially made Zoroastrianism the Persian state religion?",
+    opts: ["Cyrus the Great — the empire's founder","Xerxes I — the conqueror of Greece","Darius I — who used it to unify and legitimize his rule across the empire","Cambyses II — who introduced it after conquering Egypt"],
+    ans: 2,
+    explain: "Darius I formalized Zoroastrianism as the official state religion. He used it to help legitimize his rule across the empire."
+  },
+  {
+    q: "How did the Persian Empire treat the religious beliefs of the peoples it conquered — and why was this remarkable?",
+    opts: [
+      "Persia forced all conquered peoples to convert to Zoroastrianism",
+      "Persia allowed conquered peoples to keep their own religions, which was highly unusual for ancient empires",
+      "Persia banned all foreign religions empire-wide",
+      "Persia had no official religion policy at all"
+    ],
+    ans: 1,
+    explain: "Religious tolerance was one of Persia's most defining and remarkable characteristics. Unlike most ancient empires, Persia allowed conquered peoples to keep their own religions and customs. Cyrus the Great even freed the Jews from Babylonian captivity and let them return home — earning praise in the Bible. This tolerance helped Persia hold together such a massive, diverse empire."
+  },
+  // Location & what it was
+  {
+    q: "Which best describes what the Persian Empire was and where it was located?",
+    opts: [
+      "A small Greek-speaking kingdom near the Aegean Sea",
+      "The largest empire the ancient world had seen, stretching from modern Iran across the Middle East, Egypt, and into Central Asia",
+      "A North African empire along the Nile",
+      "A loose alliance of city-states along the Turkish coast"
+    ],
+    ans: 1,
+    explain: "At its peak under Darius I, the Persian Empire covered about 5.5 million square kilometers — from modern Iran through the Middle East, Egypt, and into Central Asia and northwest India."
+  },
+  // Public works
+  {
+    q: "What was the most significant construction project completed under Darius the Great?",
+    opts: [
+      "The Great Pyramid of Giza",
+      "The Royal Road — a 1,500-mile imperial highway linking Sardis to Susa, allowing couriers to cross it in just 7 days",
+      "The Great Wall of Persia",
+      "The Hanging Gardens of Babylon"
+    ],
+    ans: 1,
+    explain: "The Royal Road stretched from Sardis (in modern Turkey) to Susa (in modern Iran). Royal couriers using horse relay stations could cover it in just 7 days — a journey that normally took 90 days on foot!"
+  },
+  {
+    q: "Name TWO major public works projects that the Persian Empire is famous for:",
+    opts: [
+      "The Great Wall and the Colosseum",
+      "The Royal Road and Persepolis",
+      "The Suez Canal and the Parthenon",
+      "The Lighthouse of Alexandria and the Hanging Gardens of Babylon"
+    ],
+    ans: 1,
+    explain: "The Royal Road (a 1,500-mile highway) and Persepolis (the grand ceremonial capital) were the two most famous Persian construction achievements, both built primarily under Darius I."
+  },
+  // Unique characteristic
+  {
+    q: "What characteristic of the Persian Empire had NEVER been seen in any empire before it?",
+    opts: [
+      "Fielding an army of over one million soldiers from a single region",
+      "Using iron weapons and cavalry charges simultaneously",
+      "Governing hugely diverse peoples — different religions, languages, cultures — while letting each group keep its own customs",
+      "Building paved roads and a postal relay system"
+    ],
+    ans: 2,
+    explain: "Persia's policy of multicultural tolerance was revolutionary. Conquered peoples could keep their religions, languages, and local leaders. No empire before had managed such diversity under one rule."
+  },
+  // Known for
+  {
+    q: "The Persians were especially well known for their...",
+    opts: [
+      "Unbeatable navy that ruled the Mediterranean Sea",
+      "Invention of democracy and trial by jury",
+      "Tolerance, infrastructure, military strength, and efficient provincial government through satraps",
+      "Breakthroughs in mathematics and astronomy"
+    ],
+    ans: 2,
+    explain: "Persia was famous for its unprecedented tolerance, the Royal Road, Persepolis, a formidable professional army with archers and cavalry, and a system of provincial governors called satraps."
+  },
+  // What halted expansion
+  {
+    q: "What event prevented the Persian Empire from expanding further into Europe and the Mediterranean world?",
+    opts: [
+      "A massive earthquake destroyed the Persian army before it reached Greece",
+      "Internal power struggles between Darius and Xerxes weakened the empire",
+      "The Greco-Persian Wars — Greek city-states successfully repelled both invasions",
+      "Egypt revolted and cut Persia's western supply lines completely"
+    ],
+    ans: 2,
+    explain: "Greek victories at Marathon, Salamis, and Plataea stopped Persian expansion westward. Greece became the wall that blocked Persia from entering Europe."
+  },
+  // First invasion cause
+  {
+    q: "What triggered Darius I to launch the first Persian invasion of Greece in 490 BCE?",
+    opts: [
+      "Greece refused to pay tribute",
+      "Sparta raided a Persian city",
+      "Athens sent ships to support Greek city-states in western Turkey who were rebelling against Persian rule — and Darius wanted revenge",
+      "A Greek fleet sank Persian merchant ships near Cyprus"
+    ],
+    ans: 2,
+    explain: "Athens helped the Ionian Greek city-states in western Turkey during their revolt against Persia (the Ionian Revolt, 499–493 BCE). Darius invaded Greece to punish Athens for this interference."
+  },
+  // Second invasion
+  {
+    q: "Which Persian king launched the second, much larger invasion of Greece to finish what his father Darius had started?",
+    opts: [
+      "Artaxerxes I — who ruled after the wars ended",
+      "Cambyses II — Cyrus's son and successor",
+      "Cyrus the Great — the empire's founder",
+      "Xerxes I"
+    ],
+    ans: 3,
+    explain: "Xerxes I, son of Darius I, assembled one of the largest armies the ancient world had ever seen to invade Greece in 480 BCE — avenging his father's defeat at Marathon."
+  },
+  // Marathon tactics
+  {
+    q: "At the Battle of Marathon, how did the outnumbered Athenian army manage to defeat the Persian force?",
+    opts: [
+      "A night raid on the Persian camp",
+      "They flooded the plain using a broken dam upstream",
+      "They charged at a run and used a flanking formation — their wings enveloped the Persian center, trapping the enemy",
+      "War elephants stampeded the Persian lines"
+    ],
+    ans: 2,
+    explain: "Athenian general Miltiades extended the battle line to match Persian width, then attacked at a run — minimizing exposure to arrows. The Greek flanks enveloped the Persian center. It was a masterpiece of tactics."
+  },
+  // Thermopylae
+  {
+    q: "The Battle of Thermopylae is best known for being...",
+    opts: [
+      "The decisive naval battle that destroyed the Persian fleet",
+      "The final Greek victory that ended the war",
+      "A heroic 3-day last stand by 300 Spartans and Greek allies at a narrow mountain pass — they slowed Xerxes' massive army despite ultimately losing",
+      "The battle where Darius I was killed"
+    ],
+    ans: 2,
+    explain: "Thermopylae is legendary for the courage of King Leonidas and his 300 Spartans. Though Persia ultimately won when a traitor revealed a hidden path, the stand bought Greece critical time and became a symbol of bravery."
+  },
+  {
+    q: "Which Spartan king commanded the famous 300 soldiers who held the pass at Thermopylae?",
+    opts: ["King Agamemnon","King Pericles","King Leonidas I","King Themistocles"],
+    ans: 2,
+    explain: "King Leonidas I of Sparta led the defense of Thermopylae. He died in the battle. A traitor named Ephialtes revealed the hidden path that allowed Xerxes to outflank the Greeks."
+  },
+  // Salamis
+  {
+    q: "Why was the Battle of Salamis unique compared to the other major battles of the Greco-Persian War?",
+    opts: [
+      "Persia won it — their only decisive victory of the war",
+      "It was the only major naval battle — Greek ships lured the Persian fleet into a narrow strait and destroyed much of it",
+      "Greek city-states fought each other here, not Persia",
+      "It lasted over a month and involved siege weapons"
+    ],
+    ans: 1,
+    explain: "While most Greco-Persian battles were fought on land, Salamis was a naval battle — the only major sea engagement of the war. Themistocles lured the Persian fleet into the Salamis strait where Greek ships destroyed much of it."
+  },
+  // Plataea
+  {
+    q: "What happened at the Battle of Plataea in 479 BCE?",
+    opts: [
+      "The Persian fleet was destroyed near the island of Salamis",
+      "Leonidas and his 300 Spartans made their famous last stand",
+      "Greece won",
+      "Athens and Sparta signed a peace deal with Xerxes"
+    ],
+    ans: 2,
+    explain: "At Plataea, a combined Greek army — largely led by Sparta on land — crushed what remained of the Persian land forces. Persia retreated and the Greco-Persian Wars effectively ended."
+  },
+  // Who won
+  {
+    q: "Who ultimately won the Greco-Persian Wars?",
+    opts: [
+      "Persia — it held Athens for nearly 30 years before being pushed out",
+      "Greece",
+      "Neither side — both agreed to a formal peace treaty after years of stalemate",
+      "Rome stepped in and ended the conflict diplomatically"
+    ],
+    ans: 1,
+    explain: "Despite being massively outnumbered, the Greek city-states won the war through superior tactics, naval strategy, and knowledge of their terrain. Victories at Marathon, Salamis, and Plataea were decisive."
+  },
+  // Long-term result
+  {
+    q: "What was a major long-term result of the Greek victory in the Persian Wars?",
+    opts: [
+      "Greece united under one king",
+      "The Persian Empire collapsed immediately",
+      "Athens entered a Golden Age of democracy, philosophy, art, and architecture under Pericles",
+      "Sparta took permanent control of all Greek city-states as a reward for defending Greece"
+    ],
+    ans: 2,
+    explain: "Victory over Persia gave Greece — and Athens especially — an enormous boost in confidence. Under Pericles, Athens entered its Golden Age (~480–404 BCE): the era of Socrates, Plato, the Parthenon, and the height of Athenian democracy."
+  },
+  // End of empire
+  {
+    q: "Who ultimately brought the Persian Empire to an end, and when?",
+    opts: [
+      "Julius Caesar, around 100 BCE, after a series of Roman campaigns eastward",
+      "The Spartan army, right after the Greco-Persian Wars concluded",
+      "Alexander the Great — he defeated Darius III and burned Persepolis, ending over 200 years of Persian rule by 330 BCE",
+      "Attila the Hun, 5th century CE"
+    ],
+    ans: 2,
+    explain: "Alexander the Great swept through the Persian Empire in just a few years, defeating Darius III in battle and burning Persepolis. Over 200 years of Achaemenid Persian rule ended in 330 BCE."
+  },
+];
+
+const matchPairs = [
+  { term: "Cyrus the Great", def: "Founded the Persian Empire; famous for tolerance" },
+  { term: "Darius I", def: "Built the Royal Road and Persepolis" },
+  { term: "Xerxes I", def: "Led the 2nd Persian invasion of Greece" },
+  { term: "Zoroastrianism", def: "The primary religion of the Persian Empire" },
+  { term: "Royal Road", def: "1,500-mile imperial highway across Persia" },
+  { term: "King Leonidas I", def: "Spartan king who led the 300 at Thermopylae" },
+  { term: "Salamis", def: "The only major naval battle of the Greco-Persian War" },
+  { term: "Alexander the Great", def: "Conquered and ended the Persian Empire (330 BCE)" },
+  { term: "Persepolis", def: "Grand ceremonial capital city built by Darius I" },
+  { term: "Plataea", def: "Final land battle — Greek victory ended the war" },
+];
+
+// ===== STATE =====
+let totalPoints = 0, quizCorrect = 0, quizAnswered = 0, cardsFlipped = 0;
+let matchSelected = null, matchedCount = 0;
+
+function addPoints(n) { totalPoints += n; document.getElementById('total-points').textContent = totalPoints; }
+function updateScoreBar() {
+  document.getElementById('quiz-correct').textContent = quizCorrect;
+  document.getElementById('quiz-total').textContent = quizAnswered;
+  document.getElementById('cards-flipped').textContent = cardsFlipped;
+}
+
+// ===== TABS =====
+function showTab(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+// ===== FLASHCARDS =====
+function initFlashcards() {
+  const grid = document.getElementById('flashcard-grid');
+  grid.innerHTML = '';
+  vocab.forEach(v => {
+    const card = document.createElement('div');
+    card.className = 'flashcard';
+    card.innerHTML = `<div class="flashcard-inner">
+      <div class="flashcard-front">${v.term}<div class="flip-hint"></div></div>
+      <div class="flashcard-back">${v.def}</div>
+    </div>`;
+    card.addEventListener('click', () => {
+      card.classList.toggle('flipped');
+      if (card.classList.contains('flipped')) { cardsFlipped++; addPoints(2); updateScoreBar(); }
+    });
+    grid.appendChild(card);
+  });
+}
+
+// ===== QUIZ =====
+function initQuiz() {
+  const container = document.getElementById('quiz-container');
+  container.innerHTML = '';
+  quizCorrect = 0; quizAnswered = 0; updateScoreBar();
+  const shuffledQ = [...quizQuestions].sort(() => Math.random() - 0.5);
+  shuffledQ.forEach((q, qi) => {
+    const block = document.createElement('div');
+    block.className = 'quiz-question';
+    const shuffledOpts = q.opts.map((o, i) => ({ text: o, origIdx: i })).sort(() => Math.random() - 0.5);
+    block.innerHTML = `
+      <div class="q-num">QUESTION ${qi + 1} OF ${shuffledQ.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="opts-${qi}">
+        ${shuffledOpts.map(o => `<button class="opt-btn" onclick="answerQuiz(${qi}, ${o.origIdx}, ${q.ans}, this, ${JSON.stringify(shuffledOpts.map(x=>x.origIdx))})">${o.text}</button>`).join('')}
+      </div>
+      <div class="feedback" id="fb-${qi}"></div>
+    `;
+    container.appendChild(block);
+  });
+}
+
+function answerQuiz(qi, chosen, correct, btn, origIndexes) {
+  const opts = document.querySelectorAll(`#opts-${qi} .opt-btn`);
+  const fb = document.getElementById('fb-' + qi);
+  opts.forEach(b => b.disabled = true);
+  quizAnswered++;
+  if (chosen === correct) {
+    btn.classList.add('correct');
+    fb.className = 'feedback correct-fb show';
+    fb.innerHTML = '✅ <strong>Correct!</strong> ' + quizQuestions.find(q => q.ans === correct && q.opts[correct] === btn.textContent || true).explain;
+    quizCorrect++; addPoints(10);
+  } else {
+    btn.classList.add('wrong');
+    opts[origIndexes.indexOf(correct)].classList.add('correct');
+    fb.className = 'feedback wrong-fb show';
+    fb.innerHTML = '❌ <strong>Not quite.</strong> The correct answer has been highlighted.';
+    addPoints(2);
+  }
+  updateScoreBar();
+  if (quizAnswered === document.querySelectorAll('.quiz-question').length) setTimeout(showQuizSummary, 1000);
+}
+
+function showQuizSummary() {
+  const total = document.querySelectorAll('.quiz-question').length;
+  const pct = Math.round((quizCorrect / total) * 100);
+  const trophy = pct >= 90 ? '🏆' : pct >= 70 ? '🥈' : pct >= 50 ? '🥉' : '📜';
+  const msg = pct >= 90 ? 'Outstanding! You could rule the empire yourself!' : pct >= 70 ? 'Great work! A few more reviews and you\'ll ace the test.' : pct >= 50 ? 'Good effort! Check the Explore and Battles tabs then try again.' : 'Keep studying! You\'ve got this, future historian!';
+  const summary = document.createElement('div');
+  summary.className = 'quiz-summary';
+  summary.innerHTML = `<div class="trophy">${trophy}</div><h2>Quiz Complete!</h2><div class="quiz-score-big">${quizCorrect} / ${total}</div><p style="margin:10px 0;font-size:1rem;color:#666;">${pct}% — ${msg}</p><button class="btn" onclick="initQuiz()">🔄 Try Again</button>`;
+  document.getElementById('quiz-container').insertBefore(summary, document.getElementById('quiz-container').firstChild);
+  summary.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ===== MATCH =====
+function initMatch() {
+  matchSelected = null; matchedCount = 0;
+  document.getElementById('match-result').textContent = '';
+  document.getElementById('match-score-display').textContent = '';
+  const defs = [...matchPairs].sort(() => Math.random() - 0.5);
+  const termsEl = document.getElementById('match-terms');
+  const defsEl = document.getElementById('match-defs');
+  termsEl.innerHTML = ''; defsEl.innerHTML = '';
+  matchPairs.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'match-item'; el.dataset.key = p.term; el.dataset.side = 'term'; el.textContent = p.term;
+    el.addEventListener('click', () => onMatchClick(el));
+    termsEl.appendChild(el);
+  });
+  defs.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'match-item'; el.dataset.key = p.term; el.dataset.side = 'def'; el.textContent = p.def;
+    el.addEventListener('click', () => onMatchClick(el));
+    defsEl.appendChild(el);
+  });
+}
+
+function onMatchClick(el) {
+  if (el.classList.contains('matched')) return;
+  if (!matchSelected) {
+    if (el.dataset.side !== 'term') return;
+    matchSelected = el; el.classList.add('selected'); return;
+  }
+  if (el.dataset.side === 'term') {
+    document.querySelectorAll('.match-item.selected').forEach(e => e.classList.remove('selected'));
+    matchSelected = el; el.classList.add('selected'); return;
+  }
+  const termEl = matchSelected, defEl = el;
+  matchSelected = null; termEl.classList.remove('selected');
+  if (termEl.dataset.key === defEl.dataset.key) {
+    termEl.classList.add('matched'); defEl.classList.add('matched'); matchedCount++;
+    addPoints(15);
+    document.getElementById('match-score-display').textContent = `✅ ${matchedCount} / ${matchPairs.length} matched!`;
+    if (matchedCount === matchPairs.length) document.getElementById('match-result').textContent = '🎉 Perfect! You matched them all! The empire is yours!';
+  } else {
+    termEl.classList.add('wrong-flash'); defEl.classList.add('wrong-flash');
+    setTimeout(() => { termEl.classList.remove('wrong-flash'); defEl.classList.remove('wrong-flash'); }, 500);
+  }
+}
+
+// ===== INIT =====
+initFlashcards();
+initQuiz();
+initMatch();
+</script>
+</body>
+</html>
